@@ -304,12 +304,7 @@
 
   <!-- TAB 0: HEATMAP SECTORIAL -->
   <div id="heatmap" class="content-section active">
-    <div style="margin-bottom: 2rem;">
-      <p style="color: var(--color-text-secondary); font-size: 13px; margin-bottom: 1rem;">
-        Cambio en 24h. 🟢 Verde = sube | 🟡 Neutral | 🔴 Rojo = baja
-      </p>
-    </div>
-
+    
     <!-- SECTOR: CRYPTO -->
     <h2 style="font-size: 16px; font-weight: 500; margin: 2rem 0 1rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem;">Criptomonedas</h2>
     <div id="heatmap-crypto" class="heatmap-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 2rem;"></div>
@@ -353,24 +348,9 @@
       </div>
     </div>
 
-    <!-- Charts -->
-    <div class="chart-container">
-      <h2 class="chart-title">BTC/USD (últimas 24h)</h2>
-      <div class="chart-wrapper">
-        <canvas id="btcChart" role="img" aria-label="Bitcoin price chart 24 hours"></canvas>
-      </div>
-    </div>
-
-    <div class="chart-container">
-      <h2 class="chart-title">ETH/USD (últimas 24h)</h2>
-      <div class="chart-wrapper">
-        <canvas id="ethChart" role="img" aria-label="Ethereum price chart 24 hours"></canvas>
-      </div>
-    </div>
-
     <div class="update-info">
       <p>Datos en vivo via CoinGecko API</p>
-      <button onclick="fetchCryptoData()">↻ Actualizar ahora</button>
+      <button onclick="fetchAllData()">↻ Actualizar ahora</button>
     </div>
   </div>
 
@@ -597,21 +577,34 @@ function renderHeatmapSection(elementId, data) {
   const container = document.getElementById(elementId);
   container.innerHTML = Object.entries(data).map(([symbol, info]) => {
     const change = info.change24h || 0;
-    const color = change > 1 ? 'var(--color-success)' : change < -1 ? 'var(--color-danger)' : 'var(--color-warning)';
-    const bgColor = change > 1 ? 'rgba(16, 185, 129, 0.1)' : change < -1 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)';
+    let bgColor, textColor, borderColor;
+    
+    if (change > 1) {
+      bgColor = 'rgba(16, 185, 129, 0.8)';
+      textColor = '#ffffff';
+      borderColor = '#10b981';
+    } else if (change < -1) {
+      bgColor = 'rgba(239, 68, 68, 0.8)';
+      textColor = '#ffffff';
+      borderColor = '#ef4444';
+    } else {
+      bgColor = 'rgba(245, 158, 11, 0.7)';
+      textColor = '#ffffff';
+      borderColor = '#f59e0b';
+    }
     
     return `
       <div style="
         background: ${bgColor};
-        border: 1px solid ${color};
+        border: 2px solid ${borderColor};
         border-radius: 8px;
-        padding: 12px;
+        padding: 16px;
         text-align: center;
         cursor: pointer;
         transition: all 0.2s;
-      " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-        <p style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--color-text-primary);">${symbol}</p>
-        <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${color};">
+      " onmouseover="this.style.transform='scale(1.08)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">
+        <p style="margin: 0 0 12px; font-size: 18px; font-weight: 700; color: ${textColor};">${symbol}</p>
+        <p style="margin: 0; font-size: 18px; font-weight: 600; color: ${textColor};">
           ${change > 0 ? '↑' : change < 0 ? '↓' : '→'} ${Math.abs(change).toFixed(2)}%
         </p>
       </div>
