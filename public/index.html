@@ -356,13 +356,14 @@
 
   <!-- TAB 2: NOTICIAS -->
   <div id="news" class="content-section">
-    <div class="input-group">
-      <label for="news-search">Término de búsqueda</label>
-      <input type="text" id="news-search" placeholder="ej: Fed interest rates, bitcoin regulation, geopolitical crisis...">
-      <button onclick="searchNews()" style="margin-top: 8px;">Buscar noticias →</button>
+    <div style="margin-bottom: 1.5rem;">
+      <p style="color: var(--color-text-secondary); font-size: 13px; margin-bottom: 1rem;">
+        Últimas noticias macro de agencias globales. Se actualiza cada hora.
+      </p>
+      <button onclick="fetchNews()">↻ Cargar noticias ahora</button>
     </div>
     <div id="news-container">
-      <p style="color: var(--color-text-secondary); font-size: 13px;">Busca un término para traer noticias macro actualizadas</p>
+      <p style="color: var(--color-text-secondary); font-size: 13px;">Cargando noticias...</p>
     </div>
   </div>
 
@@ -393,6 +394,22 @@ let heatmapData = {
   commodities: {}
 };
 
+// Detectar si mercados están abiertos
+function areMarketsOpen() {
+  const now = new Date();
+  // Convertir a hora de NYSE (UTC-5, o UTC-4 en daylight saving)
+  const nyTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const day = nyTime.getDay();
+  const hour = nyTime.getHours();
+  
+  // Markets abiertos: Lunes-Viernes, 9:30-16:00 (NYSE)
+  const isWeekday = day >= 1 && day <= 5;
+  const isMarketHours = hour >= 9 && hour < 16;
+  
+  // Cripto está abierto siempre, pero para economía general
+  return isWeekday && isMarketHours;
+}
+
 // Tab switching
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', function() {
@@ -410,9 +427,97 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 // Fetch all data for heatmap
 async function fetchAllData() {
+  // Siempre actualizar cripto
   await fetchCryptoData();
-  await fetchIndicesData();
-  await fetchCommoditiesData();
+  
+  // Solo actualizar indices/commodities si mercados están abiertos
+  if (areMarketsOpen()) {
+    await fetchIndicesData();
+    await fetchCommoditiesData();
+  }
+  
+  renderHeatmap();
+}
+
+// Fetch news from RSS feeds
+async function fetchNews() {
+  const container = document.getElementById('news-container');
+  container.innerHTML = '<p style="color: var(--color-text-secondary); font-size: 13px;">Buscando noticias macro...</p>';
+  
+  try {
+    // Usar RSStoJSON service (gratuito)
+    const feeds = [
+      'https://feeds.bloomberg.com/markets/news.rss',
+      'https://feeds.reuters.com/finance/markets',
+      'https://feeds.cnbc.com/id/100003114/display/rss/',
+      'https://feeds.ft.com/markets'
+    ];
+    
+    let allNews = [];
+    
+    // Fetch cada feed
+    for (const feed of feeds) {
+      try {
+        const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed)}`);
+        const data = await response.json();
+        
+        if (data.items) {
+          allNews = allNews.concat(data.items.slice(0, 3)); // Top 3 de cada fuente
+        }
+      } catch (e) {
+        console.log('Error fetching feed:', feed);
+      }
+    }
+    
+    // Ordenar por fecha (más recientes primero)
+    allNews.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    
+    // Mostrar top 10
+    if (allNews.length === 0) {
+      container.innerHTML = '<p style="color: var(--color-text-secondary); font-size: 13px;">No se pudieron cargar las noticias. Intenta más tarde.</p>';
+      return;
+    }
+    
+    container.innerHTML = allNews.slice(0, 10).map(item => {
+      const title = item.title || 'Sin título';
+      const link = item.link || '#';
+      const source = item.source ? item.source.title || 'Fuente' : 'Fuente';
+      const date = new Date(item.pubDate).toLocaleString('es-AR', { 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      return `
+        <div class="news-item">
+          <p class="news-source">${source} • ${date}</p>
+          <p class="news-title">
+            <a href="${link}" target="_blank" style="color: var(--color-text-primary); text-decoration: none; cursor: pointer;">
+              ${title}
+            </a>
+          </p>
+        </div>
+      `;
+    }).join('');
+    
+  } catch (e) {
+    console.error('Error fetching news:', e);
+    container.innerHTML = '<p style="color: var(--color-text-secondary); font-size: 13px;">Error al cargar noticias.</p>';
+  }
+}
+
+// Fetch all data for heatmap
+async function fetchAllData() {
+  // Siempre actualizar cripto
+  await fetchCryptoData();
+  
+  // Solo actualizar indices/commodities si mercados están abiertos
+  if (areMarketsOpen()) {
+    await fetchIndicesData();
+    await fetchCommoditiesData();
+  }
+  
   renderHeatmap();
 }
 
@@ -620,25 +725,17 @@ function renderHeatmapSection(elementId, data) {
 }
 
 // News search
-function searchNews() {
-  const term = document.getElementById('news-search').value;
-  if (!term) return;
-  
-  const container = document.getElementById('news-container');
-  container.innerHTML = '<p style="color: var(--color-text-secondary); font-size: 13px;">Buscando noticias sobre "' + term + '"...</p>';
-  
-  setTimeout(() => {
-    container.innerHTML = `
-      <div class="news-item">
-        <p class="news-title">Búsqueda de noticias: "${term}"</p>
-        <p class="news-source">Powered by web search</p>
-        <p class="news-summary">Para ver noticias reales, abre esta URL desde Claude.ai donde puedo hacer búsquedas web en tiempo real. Aquí se mostraría una selección de noticias macro relevantes sobre el término que buscaste.</p>
-      </div>
-    `;
-  }, 500);
-}
 
-// Analysis
+// Init
+fetchAllData();
+fetchNews(); // Cargar noticias al iniciar
+renderAnalyses();
+
+// Actualizar precios cada 5 minutos
+setInterval(fetchAllData, 5 * 60 * 1000);
+
+// Actualizar noticias cada hora
+setInterval(fetchNews, 60 * 60 * 1000);
 function saveAnalysis() {
   const text = document.getElementById('analysis-text').value;
   if (!text.trim()) return;
