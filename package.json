@@ -1,0 +1,13 @@
+{
+  "name": "macro-dashboard",
+  "version": "1.0.0",
+  "description": "Consola de especulación macro - análisis cripto y geopolítica",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 3000",
+    "build": "echo 'Static site - no build needed'"
+  },
+  "keywords": ["crypto", "macro", "analysis", "dashboard"],
+  "author": "Ignacio",
+  "license": "MIT"
+}

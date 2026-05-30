@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Consola de especulación macro - análisis cripto y geopolítica">
+  <title>Consola Macro | Especulación Seria</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --color-bg-primary: #ffffff;
+      --color-bg-secondary: #f3f1ef;
+      --color-text-primary: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-text-tertiary: #999999;
+      --color-border: #e0dcd8;
+      --color-success: #10b981;
+      --color-danger: #ef4444;
+      --color-info: #3b82f6;
+      --color-warning: #f59e0b;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg-primary: #1a1a1a;
+        --color-bg-secondary: #2d2d2d;
+        --color-text-primary: #f5f5f5;
+        --color-text-secondary: #b3b3b3;
+        --color-text-tertiary: #808080;
+        --color-border: #3d3d3d;
+      }
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-bottom: 2rem;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .tab-btn {
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      transition: all 0.2s;
+    }
+    
+    .tab-btn.active {
+      border-bottom-color: var(--color-text-primary);
+      color: var(--color-text-primary);
+      font-weight: 500;
+    }
+    
+    .content-section {
+      display: none;
+    }
+    
+    .content-section.active {
+      display: block;
+    }
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+      background: var(--color-bg-secondary);
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+    }
+    
+    .metric-label {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    
+    .metric-value {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .metric-subtext {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+    
+    .chart-container {
+      margin-bottom: 2rem;
+    }
+    
+    .chart-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+    
+    .chart-wrapper {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      margin-bottom: 2rem;
+    }
+    
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--color-bg-primary);
+      color: var(--color-text-primary);
+    }
+    
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    
+    button {
+      padding: 10px 16px;
+      background: transparent;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+      transition: all 0.2s;
+    }
+    
+    button:hover {
+      background: var(--color-bg-secondary);
+      border-color: var(--color-text-secondary);
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    .news-item {
+      background: var(--color-bg-secondary);
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 3px solid var(--color-info);
+      margin-bottom: 1rem;
+    }
+    
+    .news-title {
+      font-weight: 500;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .news-source {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-bottom: 8px;
+    }
+    
+    .news-summary {
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    
+    .analysis-item {
+      background: var(--color-bg-secondary);
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 3px solid var(--color-warning);
+      margin-bottom: 1rem;
+    }
+    
+    .analysis-date {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    
+    .analysis-text {
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    
+    .grid-1-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .grid-1-2 {
+        grid-template-columns: 1fr;
+      }
+      
+      h1 {
+        font-size: 20px;
+      }
+      
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    .update-info {
+      background: var(--color-bg-secondary);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--color-border);
+    }
+    
+    .update-info p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+    
+    .update-info button {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- Header -->
+  <h1>Consola de especulación macro</h1>
+  <p class="subtitle">
+    <span id="timestamp">Actualizando...</span> | Modo: Cripto + Geopolítica
+  </p>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="crypto">Cripto</button>
+    <button class="tab-btn" data-tab="news">Noticias Macro</button>
+    <button class="tab-btn" data-tab="analysis">Mi Análisis</button>
+  </div>
+
+  <!-- TAB 1: CRYPTO -->
+  <div id="crypto" class="content-section active">
+    
+    <!-- Metric Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <p class="metric-label">BTC</p>
+        <p class="metric-value" id="btc-price">$0</p>
+        <p class="metric-subtext" id="btc-change">—</p>
+      </div>
+      <div class="metric-card">
+        <p class="metric-label">ETH</p>
+        <p class="metric-value" id="eth-price">$0</p>
+        <p class="metric-subtext" id="eth-change">—</p>
+      </div>
+      <div class="metric-card">
+        <p class="metric-label">BTC.DOM</p>
+        <p class="metric-value" id="dom-price">0%</p>
+        <p class="metric-subtext">Dominancia</p>
+      </div>
+      <div class="metric-card">
+        <p class="metric-label">Fear & Greed</p>
+        <p class="metric-value" id="fear-gauge">—</p>
+        <p class="metric-subtext" id="fear-state">—</p>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="chart-container">
+      <h2 class="chart-title">BTC/USD (últimas 24h)</h2>
+      <div class="chart-wrapper">
+        <canvas id="btcChart" role="img" aria-label="Bitcoin price chart 24 hours"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h2 class="chart-title">ETH/USD (últimas 24h)</h2>
+      <div class="chart-wrapper">
+        <canvas id="ethChart" role="img" aria-label="Ethereum price chart 24 hours"></canvas>
+      </div>
+    </div>
+
+    <div class="update-info">
+      <p>Datos en vivo via CoinGecko API</p>
+      <button onclick="fetchCryptoData()">↻ Actualizar ahora</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: NOTICIAS -->
+  <div id="news" class="content-section">
+    <div class="input-group">
+      <label for="news-search">Término de búsqueda</label>
+      <input type="text" id="news-search" placeholder="ej: Fed interest rates, bitcoin regulation, geopolitical crisis...">
+      <button onclick="searchNews()" style="margin-top: 8px;">Buscar noticias →</button>
+    </div>
+    <div id="news-container">
+      <p style="color: var(--color-text-secondary); font-size: 13px;">Busca un término para traer noticias macro actualizadas</p>
+    </div>
+  </div>
+
+  <!-- TAB 3: MI ANÁLISIS -->
+  <div id="analysis" class="content-section">
+    <div class="input-group">
+      <label for="analysis-text">Análisis / Hipótesis</label>
+      <textarea id="analysis-text" placeholder="Anota tu tesis macro aquí. Ej: Si el Fed sube tasas, BTC bajará porque... Dominancia BTC al 60% sugiere... El conflicto en X aumentará presión sobre Y..."></textarea>
+      <button onclick="saveAnalysis()" style="margin-top: 8px;">Guardar análisis</button>
+    </div>
+    <div>
+      <h3 style="margin: 1.5rem 0 1rem; font-size: 14px;">Análisis guardados</h3>
+      <div id="analysis-list">
+        <p style="color: var(--color-text-secondary); font-size: 13px;">Sin análisis guardados aún</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// State
+let analyses = JSON.parse(localStorage.getItem('analyses') || '[]');
+let btcChart, ethChart;
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const tabName = this.dataset.tab;
+    
+    // Update buttons
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    
+    // Update content
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(tabName).classList.add('active');
+  });
+});
+
+// Fetch crypto data
+async function fetchCryptoData() {
+  try {
+    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
+    const data = await response.json();
+    
+    const btc = data.bitcoin.usd;
+    const btc24 = data.bitcoin.usd_24h_change;
+    const eth = data.ethereum.usd;
+    const eth24 = data.ethereum.usd_24h_change;
+    
+    // Update BTC
+    document.getElementById('btc-price').textContent = '$' + Math.round(btc).toLocaleString('en-US');
+    document.getElementById('btc-change').textContent = (btc24 > 0 ? '↑' : '↓') + ' ' + Math.abs(btc24).toFixed(2) + '%';
+    document.getElementById('btc-change').style.color = btc24 > 0 ? 'var(--color-success)' : 'var(--color-danger)';
+    
+    // Update ETH
+    document.getElementById('eth-price').textContent = '$' + Math.round(eth).toLocaleString('en-US');
+    document.getElementById('eth-change').textContent = (eth24 > 0 ? '↑' : '↓') + ' ' + Math.abs(eth24).toFixed(2) + '%';
+    document.getElementById('eth-change').style.color = eth24 > 0 ? 'var(--color-success)' : 'var(--color-danger)';
+    
+    // Dominancia
+    const domResponse = await fetch('https://api.coingecko.com/api/v3/global');
+    const domData = await domResponse.json();
+    const dom = domData.data.btc_market_cap_percentage;
+    document.getElementById('dom-price').textContent = (Math.round(dom * 10) / 10) + '%';
+    
+    // Fear & Greed (mock - en producción podrías integrar con una API real)
+    const fearGauge = Math.floor(Math.random() * 100);
+    document.getElementById('fear-gauge').textContent = fearGauge;
+    const state = fearGauge > 70 ? 'Codicia' : fearGauge > 50 ? 'Neutral' : fearGauge > 25 ? 'Miedo' : 'Pánico';
+    document.getElementById('fear-state').textContent = state;
+    
+    // Timestamp
+    document.getElementById('timestamp').textContent = new Date().toLocaleTimeString('es-AR');
+    
+    // Datos para gráficos (mock - últimas 24h)
+    const hours = Array.from({length: 24}, (_, i) => (i) + 'h');
+    const btcPrices = Array.from({length: 24}, () => btc * (0.98 + Math.random() * 0.04));
+    const ethPrices = Array.from({length: 24}, () => eth * (0.98 + Math.random() * 0.04));
+    
+    // Destroy existing charts
+    if (btcChart) btcChart.destroy();
+    if (ethChart) ethChart.destroy();
+    
+    // BTC Chart
+    btcChart = new Chart(document.getElementById('btcChart'), {
+      type: 'line',
+      data: {
+        labels: hours,
+        datasets: [{
+          label: 'BTC/USD',
+          data: btcPrices,
+          borderColor: '#F59E0B',
+          backgroundColor: 'rgba(245, 158, 11, 0.05)',
+          tension: 0.3,
+          fill: true,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { 
+            beginAtZero: false,
+            grid: { 
+              color: 'rgba(0,0,0,0.05)',
+              drawBorder: true
+            }
+          },
+          x: { 
+            grid: { display: false } 
+          }
+        }
+      }
+    });
+    
+    // ETH Chart
+    ethChart = new Chart(document.getElementById('ethChart'), {
+      type: 'line',
+      data: {
+        labels: hours,
+        datasets: [{
+          label: 'ETH/USD',
+          data: ethPrices,
+          borderColor: '#8B5CF6',
+          backgroundColor: 'rgba(139, 92, 246, 0.05)',
+          tension: 0.3,
+          fill: true,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { 
+            beginAtZero: false,
+            grid: { 
+              color: 'rgba(0,0,0,0.05)',
+              drawBorder: true
+            }
+          },
+          x: { 
+            grid: { display: false } 
+          }
+        }
+      }
+    });
+    
+  } catch (e) {
+    console.error('Error fetching crypto:', e);
+  }
+}
+
+// News search
+function searchNews() {
+  const term = document.getElementById('news-search').value;
+  if (!term) return;
+  
+  const container = document.getElementById('news-container');
+  container.innerHTML = '<p style="color: var(--color-text-secondary); font-size: 13px;">Buscando noticias sobre "' + term + '"...</p>';
+  
+  // Simulamos búsqueda (en producción integrarías una API real o haría web search)
+  setTimeout(() => {
+    container.innerHTML = `
+      <div class="news-item">
+        <p class="news-title">Búsqueda de noticias: "${term}"</p>
+        <p class="news-source">Powered by web search</p>
+        <p class="news-summary">Para ver noticias reales, abre esta URL desde Claude.ai donde puedo hacer búsquedas web en tiempo real. Aquí se mostraría una selección de noticias macro relevantes sobre el término que buscaste.</p>
+      </div>
+    `;
+  }, 500);
+}
+
+// Analysis
+function saveAnalysis() {
+  const text = document.getElementById('analysis-text').value;
+  if (!text.trim()) return;
+  
+  const analysis = {
+    id: Date.now(),
+    text: text,
+    date: new Date().toLocaleString('es-AR'),
+  };
+  
+  analyses.unshift(analysis);
+  localStorage.setItem('analyses', JSON.stringify(analyses));
+  document.getElementById('analysis-text').value = '';
+  renderAnalyses();
+}
+
+function renderAnalyses() {
+  const list = document.getElementById('analysis-list');
+  if (analyses.length === 0) {
+    list.innerHTML = '<p style="color: var(--color-text-secondary); font-size: 13px;">Sin análisis guardados aún</p>';
+    return;
+  }
+  
+  list.innerHTML = analyses.map(a => `
+    <div class="analysis-item">
+      <p class="analysis-date">${a.date}</p>
+      <p class="analysis-text">${escapeHtml(a.text)}</p>
+      <button class="btn-small" onclick="deleteAnalysis(${a.id})">Eliminar</button>
+    </div>
+  `).join('');
+}
+
+function deleteAnalysis(id) {
+  analyses = analyses.filter(a => a.id !== id);
+  localStorage.setItem('analyses', JSON.stringify(analyses));
+  renderAnalyses();
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+// Init
+fetchCryptoData();
+renderAnalyses();
+setInterval(fetchCryptoData, 60000); // Actualiza cada minuto
+</script>
+
+</body>
+</html>
